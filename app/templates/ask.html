@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ask</title>
+</head>
+<body>
+  <h1>{{ message }}</h1>
+  <input type="text" id="question" placeholder="Ask a question">
+  <button type="button" id="testBtn">Ask GPT</button>
+  <button type="button" id="Stop">Stop</button>
+  <div id="output"></div>
+  <hr />
+  <hr />
+  <div id="testOutput"></div>
+  <script>
+    const api = "chat";
+
+    async function getChatResponse(decoder) {
+      const outputDiv = document.getElementById("output");
+      while(true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          outputDiv.innerHTML += "<hr />";
+          document.getElementById("question").value = "";
+          break;
+        }
+        const result = decoder.decode(value, { stream: true });
+        outputDiv.textContent += result;
+      }
+    }
+
+    let reader;
+    let session_id = "";
+
+    document.getElementById("testBtn").addEventListener("click", async () => {
+      const res = await fetch("http://127.0.0.1:8000/llm/chat", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          "prompt": document.getElementById("question").value, //for the chat endpoint,
+          "session_id": session_id,
+          "messages": [{
+            "role": "user",
+            "content": document.getElementById("question").value
+          }]
+        })
+      });
+
+      reader = res.body.getReader();
+      session_id = session_id || res.headers.get('X-Session-ID');
+      console.log(session_id)
+      const decoder = new TextDecoder();
+      let response = "";
+      const outputDiv = document.getElementById("output");
+
+      if(api == "chat") {
+        getChatResponse(decoder)
+      } else {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            outputDiv.innerHTML += "<hr />";
+            document.getElementById("question").value = "";
+            break;
+          }
+          // console.log("Decoder value:", decoder.decode(value, { stream: true }))
+          const result = JSON.parse(decoder.decode(value, { stream: true }));
+          response = result.response;
+          outputDiv.textContent += response;
+          document.getElementById("testOutput").textContent += decoder.decode(value, { stream: true });
+        }
+      }
+    });
+
+    document.getElementById("Stop").addEventListener("click", () => {
+      reader.cancel();
+    });
+  </script>
+</body>
+</html>
