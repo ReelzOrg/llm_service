@@ -1,0 +1,5 @@
+fastapi
+aiohttp
+pydantic
+grpcio
+grpcio-tools

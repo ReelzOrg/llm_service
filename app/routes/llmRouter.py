@@ -61,7 +61,6 @@ async def askModel(req: Request):
       fetch_stream(OLLAMA_GENERATE_ENDPOINT, jsonPayload=ollama_payload),
       media_type="text/event-stream"
     )
-
   except:
     return { "success": False, "message": "Something went wrong" }
 
@@ -71,6 +70,7 @@ async def chatInterface(request: Request):
   templates = Jinja2Templates(directory="templates")
   return templates.TemplateResponse("ask.html", { "request": request, "message": "Yo" })
 
+# This is now handled by the gRPC function in llmProtobuf.py
 # When a user waits for a long time before sending another prompt, ollama will unload the model from memory to save
 # resources. To prevent this, we will keep the model loaded in memory by sending a keep-alive request every 5 minutes.
 # Or we can configure ollama before running - `ollama serve --keep-alive 30m`
