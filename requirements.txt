@@ -3,3 +3,4 @@ aiohttp
 pydantic
 grpcio
 grpcio-tools
+langchain-ollama

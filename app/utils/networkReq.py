@@ -14,12 +14,12 @@ class Mode(StrEnum):
 
 async def initSession():
   global session
-  if session is None:
+  if session is None or session.closed:
     session = aiohttp.ClientSession()
 
 async def close_session():
     global session
-    if session is not None:
+    if session is not None and not session.closed:
         await session.close()
         session = None
 

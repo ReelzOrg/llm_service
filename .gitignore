@@ -1,4 +1,4 @@
 .env
 .vscode
-test.py
+extras/
 dev-venv/
