@@ -10,7 +10,7 @@ from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-from utils.networkReq import fetch, fetch_stream
+from app.utils.networkReq import fetch, fetch_stream
 
 ## /llm
 router = APIRouter()

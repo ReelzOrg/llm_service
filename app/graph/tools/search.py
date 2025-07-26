@@ -1,13 +1,14 @@
 import os
 from langchain_core.tools import tool
+
 from utils.networkReq import session
 
-SEARXNG_URL = os.getenv("SEARXNG_URL", "http://127.0.0.1:8888")
+_SEARXNG_URL = os.getenv("SEARXNG_URL", "http://127.0.0.1:8888")
 
 @tool
 async def searxng_search(query: str) -> str:
   try:
-    async with session.get(f"{SEARXNG_URL}/search", params={"q": query, "format": "json"}) as response:
+    async with session.get(f"{_SEARXNG_URL}/search", params={"q": query, "format": "json"}) as response:
       response.raise_for_status()
       search_data = await response.json()
 

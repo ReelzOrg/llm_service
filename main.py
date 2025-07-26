@@ -1,13 +1,17 @@
-import os
+#This is mostly a gRPC server but the fastapi is here because maybe I will add something
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 
-from middlewares.utils import calcTimeTaken
-from utils.networkReq import close_session
-from routes.llmRouter import router as chatRouter
+# from app.middlewares.utils import calcTimeTaken
+# from app.utils.networkReq import close_session
+# from app.routes.llmRouter import router as chatRouter
+
+from app.middlewares.utils import calcTimeTaken
+from app.utils.networkReq import close_session
+from app.routes.llmRouter import router as chatRouter
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -27,7 +31,7 @@ app.add_middleware(
 # app.middleware("http")(calcTimeTaken)
 # app.add_middleware(HTTPSRedirectMiddleware)
 
-app.mount("/public", StaticFiles(directory="public"), name="public")
+# app.mount("/public", StaticFiles(directory="public"), name="public")
 
 app.include_router(chatRouter, prefix="/llm")
 

@@ -19,7 +19,7 @@ async def initSession():
 
 async def close_session():
     global session
-    if session is not None and not session.closed:
+    if session is not None: #and not session.closed:
         await session.close()
         session = None
 

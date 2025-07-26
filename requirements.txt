@@ -1,6 +1,10 @@
 fastapi
+uvicorn
 aiohttp
 pydantic
 grpcio
 grpcio-tools
 langchain-ollama
+langgraph
+transformers
+langchain_huggingface
