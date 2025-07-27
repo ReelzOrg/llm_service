@@ -6,6 +6,7 @@ from langchain_huggingface import HuggingFacePipeline
 
 from ..state import GraphState, ModelProvider
 from ..tools.search import searxng_search
+from ..prompts import agent_prompt_template
 
 def get_model(provider: ModelProvider, model_name: str):
   if provider == "ollama":
@@ -19,7 +20,6 @@ def get_model(provider: ModelProvider, model_name: str):
 
   raise ValueError(f"Unknown provider {provider}")
 
-
 def agent_node(state: GraphState):
   provider = state["model_provider"]
   model_name = state["model_name"]
@@ -27,7 +27,8 @@ def agent_node(state: GraphState):
 
   llm = get_model(provider, model_name)
   llm_with_tools = llm.bind_tools([searxng_search])
+  chain = agent_prompt_template | llm_with_tools
 
-  response = llm_with_tools.invoke(state["messages"])
+  response = chain.invoke({"messages": state["messages"]})
 
   return {"messages": [response]}

@@ -27,6 +27,8 @@ class LLMServiceClass(llm_service_pb2_grpc.LLMServiceServicer):
 
   async def LLMChat(self, request, context):
     session_id = request.session_id
+
+    #We are already creating the session ID in Node.js so this step is not actually needed
     if not session_id:
       session_id = str(uuid.uuid4())
       logging.info(f"Generated new session_id: {session_id}")
