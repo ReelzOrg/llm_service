@@ -5,6 +5,8 @@ pydantic
 grpcio
 grpcio-tools
 langchain-ollama
+langchain_huggingface
 langgraph
 transformers
-langchain_huggingface
+cohere
+xgboost

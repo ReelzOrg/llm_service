@@ -4,8 +4,8 @@ from pydantic import BaseModel, Field
 from ..state import GraphState, ModelProvider
 from ..prompts import triage_prompt
 
-# Right now we are using a smaller cheap model for dynamic routing to more specialized LLM, but maybe creating a
-# custom model is faster
+# Right now we are using a smaller cheap model for dynamic routing to more specialized LLM.
+# I will add XGBoost for classification and routing
 triage_llm = ChatOllama(model="gemma3:1b", temperature=0)
 
 class Triage(BaseModel):
