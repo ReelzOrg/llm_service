@@ -5,8 +5,11 @@ pydantic
 grpcio
 grpcio-tools
 langchain-ollama
-langchain_huggingface
+langchain-huggingface
 langgraph
 transformers
 cohere
 xgboost
+psycopg2-binary
+asyncpg
+sentence-transformers

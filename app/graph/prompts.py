@@ -4,7 +4,7 @@ triage_prompt = ChatPromptTemplate.from_messages([
   ("system", """You are an expert at routing a user's request to the correct model provider and model.
   Based on the user's prompt, decide which provider and model to use.
   
-  - For general conversation or simple tasks that can run locally, use 'ollama' with the 'gemma3:4b' model.
+  - For general conversation or simple tasks that can run locally, use 'ollama' with the 'qwen3:4b' model.
   - For coding specific tasks, use 'ollama' with the 'qwen2.5-coder:7b' model.
   """),
   ("human", "User prompt: {prompt}")

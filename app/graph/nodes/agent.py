@@ -1,5 +1,6 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.pipelines import pipeline
+from langchain_core.tools import render_text_description
 
 from langchain_ollama import ChatOllama
 from langchain_huggingface import HuggingFacePipeline
@@ -8,9 +9,9 @@ from ..state import GraphState, ModelProvider
 from ..tools.search import searxng_search
 from ..prompts import agent_prompt_template
 
-def get_model(provider: ModelProvider, model_name: str):
+def get_model(provider: ModelProvider, model_name: str, model_params: dict = {"temperature": 0.5}):
   if provider == "ollama":
-    return ChatOllama(model=model_name, temperature=0.5)
+    return ChatOllama(model=model_name, **model_params)
 
   if provider == "huggingface":
     tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -21,14 +22,27 @@ def get_model(provider: ModelProvider, model_name: str):
   raise ValueError(f"Unknown provider {provider}")
 
 def agent_node(state: GraphState):
-  provider = state["model_provider"]
-  model_name = state["model_name"]
-  print(f"---NODE: AGENT (PROVIDER: {provider}, MODEL: {model_name})---")
+  # provider = state["model_provider"]
+  # model_name = state["model_name"]
+  # print(f"---NODE: AGENT (PROVIDER: {provider}, MODEL: {model_name})---")
 
-  llm = get_model(provider, model_name)
+  # model_name = state["model_info"]["name"]
+  # model_params = state["model_info"]["parameters"]
+  model_name = state.model_info.name
+  model_params = state.model_info.parameters
+  print(f"---NODE: AGENT (MODEL: {model_name})---")
+
+  llm = get_model("ollama", model_name, model_params)
   llm_with_tools = llm.bind_tools([searxng_search])
   chain = agent_prompt_template | llm_with_tools
 
-  response = chain.invoke({"messages": state["messages"]})
+  # response = chain.invoke({"messages": state["messages"]})
+  response = chain.invoke({
+    "messages": state.messages,
+    "tools": render_text_description([searxng_search])
+  })
+
+  print(f"---AGENT RESPONSE CONTENT: {response}---")
+  print(f"---AGENT RESPONSE TOOL CALLS: {response.tool_calls}---")
 
   return {"messages": [response]}

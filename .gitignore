@@ -2,4 +2,5 @@
 .vscode
 extras/
 dev-venv/
+.venv/
 __pycache__/

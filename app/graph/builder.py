@@ -8,7 +8,7 @@ from .tools.search import searxng_search
 from .state import GraphState
 
 def should_continue(state: GraphState):
-  if state["messages"][-1].tool_calls:
+  if state.messages[-1].tool_calls:
     return "tools"
 
   # End the conversation/graph

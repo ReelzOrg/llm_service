@@ -18,7 +18,7 @@ router = APIRouter()
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
 OLLAMA_CHAT_ENDPOINT = f"{OLLAMA_HOST}/api/chat"
 OLLAMA_GENERATE_ENDPOINT = f"{OLLAMA_HOST}/api/generate"
-DEFAULT_OLLAMA_MODEL = os.getenv("DEFAULT_OLLAMA_MODEL", "gemma3:4b")
+DEFAULT_OLLAMA_MODEL = os.getenv("DEFAULT_OLLAMA_MODEL", "qwen3:4b")
 
 MAX_HISTORY = 20
 active_sessions = set()
