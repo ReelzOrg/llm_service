@@ -1,0 +1,8 @@
+py-spy - For python code profiling
+LLM-Blender to rank and fuse outputs from different chatbots to produce a more coherent, engaging, and accurate answer.
+Merge Kit - merging a coding model with a creative writing model using techniques like SLERP or TIES to create a new, versatile model.
+Promptmetheus
+PairRanker/GenFuser, Weighted Merging (TIES, DARE), Stochastic Selection: YouTube[https://www.youtube.com/watch?v=aT_aT0-ur_E] Randomly selecting one model from a group to generate the next response in a conversation. 
+
+https://medium.com/nerd-for-tech/make-money-building-a-fast-powerful-chatbot-in-10-minutes-using-nltk-91038e15ab17
+https://collectednotes.com/chai/

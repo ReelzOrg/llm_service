@@ -1,44 +1,44 @@
-from qdrant_client import QdrantClient, models
+import os
+import logging
+from dotenv import load_dotenv
+if not load_dotenv():
+  raise Exception("Failed to load .env file")
 
-# Handle connections over gRPC
-client = QdrantClient(url="http://localhost:6334")
+from qdrant_client import AsyncQdrantClient, QdrantClient
+from qdrant_client.http.models import Distance, VectorParams, OptimizersConfigDiff
 
-# Create a collection
-client.create_collection(
-    collection_name="user_conversations",
-    vectors_config=models.VectorParams(
-        size=384, # we are using sentence-transformers/all-MiniLM-L6-v2
-        distance="cosine"
-    )
-)
+logger = logging.getLogger(__name__)
 
-# Add a vector to the collection
-# client.upsert(
-#     collection_name="user_conversations",
-#     points=[
-#         models.PointStruct(
-#             id="msg_123e4567-e89b-12d3-a456-426614174000",
-#             vector=[0.123, -0.456, 0.789, ...],
-#             payload={
-#                 "user_id": "user_abc123",
-#                 "conversation_id": "conv_xyz789",
-#                 "message_type": "user",
-#                 "content_preview": "How do I create a video with...",
-#                 "timestamp": "2025-10-10T14:30:00Z",
-#                 "session_id": "sess_def456",
-#                 "intent": "question",
-#                 "entities": ["video", "creation", "tutorial"],
-#                 "language": "en"
-#             }
-#         )
-#     ]
+def create_qdrant_client(**kwargs) -> AsyncQdrantClient:
+	"""Creates and returns a new AsyncQdrantClient instance"""
+	return AsyncQdrantClient(url=os.getenv("QDRANT_URL_GRPC"), prefer_grpc=True, host=os.getenv("HOST") or "localhost", **kwargs)
+
+async def create_qdrant_collection(client: AsyncQdrantClient, collection_name: str, config: VectorParams):
+	try:
+		if await client.collection_exists(collection_name):
+			raise Exception("Collection already exists")
+			# return
+
+		# we are using Qwen/Qwen3-Embedding-0.6B which creates vector of size 1024
+		await client.create_collection(
+			collection_name=collection_name,
+			vectors_config=config or VectorParams(size=1024, distance=Distance.COSINE),
+		)
+
+	except Exception as e:
+		logger.error(f"Error creating collection - {collection_name}: {e}")
+
+
+# HuggingFaceEmbeddings uses SentenceTransformer under the hood
+# embeddingModel = SentenceTransformer(
+# 	"Qwen/Qwen3-Embedding-0.6B",
+# 	model_kwargs={"attn_implementation": "flash_attention_2", "device_map": "auto"},
+# 	tokenizer_kwargs={"padding_side": "left"}
+# )
+# embeddingModel = HuggingFaceEmbeddings(
+# 	model_name="Qwen/Qwen3-Embedding-0.6B",
+# 	model_kwargs={"device": torch.cuda.is_available() and "cuda" or "cpu", "trust_remote_code": True},
+# 	encode_kwargs={"normalize_embeddings": True}
 # )
 
-# Search for similar vectors
-# results = client.search(
-#     collection_name="user_conversations",
-#     query_vector=[0.123, -0.456, 0.789, ...],
-#     limit=5
-# )
-
-print(results)
+# vectorStore = QdrantVectorStore(client=qdrantClient, collection_name="user_conversations", embedding=embeddingModel)

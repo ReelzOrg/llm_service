@@ -1,0 +1,20 @@
+version: '3'
+
+vars:
+  PROTO_DIR: protos
+  # specific path filters
+  SERVICE_PATH: "{{.PROTO_DIR}}/llm/v1"
+
+tasks:
+  proto:
+    desc: Generate Python code for LLM Service
+    cmds:
+      - echo "Generating Python code..."
+      - uv run buf generate {{.PROTO_DIR}} --path {{.SERVICE_PATH}}
+    silent: true
+
+  update:
+    desc: Pull latest submodule changes and regenerate
+    cmds:
+      - git submodule update --remote --merge
+      - task: proto

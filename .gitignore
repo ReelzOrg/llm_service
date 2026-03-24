@@ -1,6 +1,6 @@
 .env
 .vscode
-extras/
-dev-venv/
 .venv/
+.venv-linux/
 __pycache__/
+verify_registry.py

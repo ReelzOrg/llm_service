@@ -1,48 +1,47 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from transformers.pipelines import pipeline
-from langchain_core.tools import render_text_description
-
+from langchain_core.tools import BaseTool
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama import ChatOllama
-from langchain_huggingface import HuggingFacePipeline
+from transformers import AutoTokenizer
 
-from ..state import GraphState, ModelProvider
+from ..state import ChatGraphState
 from ..tools.search import searxng_search
 from ..prompts import agent_prompt_template
 
-def get_model(provider: ModelProvider, model_name: str, model_params: dict = {"temperature": 0.5}):
-  if provider == "ollama":
-    return ChatOllama(model=model_name, **model_params)
+def make_agent_node(model: ChatOllama, tools: list[BaseTool], sysPrompt: ChatPromptTemplate):
+	model_with_tools = model.bind_tools(tools)
+	agent = sysPrompt | model_with_tools
 
-  if provider == "huggingface":
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16)  # Use bfloat16 for memory efficiency
-    hf_pipeline = pipeline("text-generation", model=model, tokenizer=tokenizer)
-    return HuggingFacePipeline(pipeline=hf_pipeline)
+	# check if the messages fit within the model's context length
+	# model.get_num_tokens(input_prompt)
 
-  raise ValueError(f"Unknown provider {provider}")
+	tokenizer = AutoTokenizer.from_pretrained(model.model)
+	len(tokenizer.encode())
 
-def agent_node(state: GraphState):
-  # provider = state["model_provider"]
-  # model_name = state["model_name"]
-  # print(f"---NODE: AGENT (PROVIDER: {provider}, MODEL: {model_name})---")
+	def agent_node(state: ChatGraphState):
+		return {"messages": [agent.invoke({"messages": state["messages"]})]}
 
-  # model_name = state["model_info"]["name"]
-  # model_params = state["model_info"]["parameters"]
-  model_name = state.model_info.name
-  model_params = state.model_info.parameters
-  print(f"---NODE: AGENT (MODEL: {model_name})---")
+	return agent_node
 
-  llm = get_model("ollama", model_name, model_params)
-  llm_with_tools = llm.bind_tools([searxng_search])
-  chain = agent_prompt_template | llm_with_tools
+# Fast Model
+# 256k, text + image, vision + tools
+fastModelNode = make_agent_node(
+	ChatOllama(model="qwen3-vl:2b", temperature=0),
+	[searxng_search],
+	agent_prompt_template
+)
 
-  # response = chain.invoke({"messages": state["messages"]})
-  response = chain.invoke({
-    "messages": state.messages,
-    "tools": render_text_description([searxng_search])
-  })
+# Complex Model
+# 256k, text + image, vision + tools
+complexModelNode = make_agent_node(
+	ChatOllama(model="qwen3-vl:4b", temperature=0),
+	[searxng_search],
+	agent_prompt_template
+)
 
-  print(f"---AGENT RESPONSE CONTENT: {response}---")
-  print(f"---AGENT RESPONSE TOOL CALLS: {response.tool_calls}---")
-
-  return {"messages": [response]}
+# Coding Model
+# 32k, text, tools
+codingModelNode = make_agent_node(
+	ChatOllama(model="qwen2.5-coder:0.5b", temperature=0),
+	[searxng_search],
+	agent_prompt_template
+)

@@ -19,10 +19,14 @@ class HTTPClient:
     print("GETTING URL: ", url)
     return await self._request("GET", url, headers=headers, **kwargs)
 
-  async def post(self, url, **kwargs):
-    return await self._request("POST", url, **kwargs)
+  async def post(self, url, data=None, **kwargs):
+    return await self._request("POST", url, data=data, **kwargs)
 
-  async def _request(self, method, url, headers=None, **kwargs):
+  async def getMultiple(self, urls, headers=None, **kwargs):
+    tasks = [self.get(url, headers=headers, **kwargs) for url in urls]
+    return await asyncio.gather(*tasks)
+
+  async def _request(self, method, url, data=None, headers=None, **kwargs):
     if not self.session:
       # raise RuntimeError("HTTPClient not initialized")
       print("Initializing HTTPClient")
@@ -33,9 +37,13 @@ class HTTPClient:
       **(headers or {}),
     }
     
-    async with self.session.request(method, url, headers=final_headers, **kwargs) as resp:
-      resp.raise_for_status()
-      return await resp.json()
+    if self.session:
+      async with self.session.request(method, url, headers=final_headers, data=data, **kwargs) as resp:
+        resp.raise_for_status()
+        return await resp.json()
+    else:
+      # This is redundant since we are checking at the top of the function
+      raise RuntimeError("HTTPClient not initialized")
 
 http_client = HTTPClient()
 # http_client.init()
